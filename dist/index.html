@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Portail en ligne de création et de suivi des demandes" />
+    <title>Demandes — Portail des services émetteurs</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#" aria-label="Demandes, accueil"><span class="brand-mark">D</span><span>Demandes</span></a>
+      <nav aria-label="Navigation principale">
+        <button class="nav-button active" data-view="create">Créer une demande</button>
+        <button class="nav-button" data-view="follow">Suivre mes demandes <span class="nav-count" id="nav-count">0</span></button>
+      </nav>
+      <div class="service-state"><span></span><div><strong>Service disponible</strong><small>Disponibilité cible : 97 %</small></div></div>
+    </header>
+
+    <main>
+      <section id="create-view" class="page">
+        <div class="page-intro">
+          <div><p class="eyebrow">PORTAIL DES SERVICES ÉMETTEURS</p><h1>Créer une demande</h1><p>Sélectionnez le besoin correspondant. Un numéro unique vous sera communiqué immédiatement après l’envoi.</p></div>
+          <div class="help-card"><span>?</span><div><strong>Besoin d’aide ?</strong><small>Contactez l’équipe dédiée depuis votre canal habituel.</small></div></div>
+        </div>
+
+        <div class="creation-layout">
+          <section class="type-panel" aria-labelledby="type-title">
+            <div class="section-heading"><span class="step-number">1</span><div><h2 id="type-title">Nature de la demande</h2><p>Choisissez une catégorie.</p></div></div>
+            <div class="type-grid" id="type-grid">
+              <button class="type-card active" type="button" data-type="Assistance technique"><span class="type-icon">⌁</span><span><strong>Assistance technique</strong><small>Aide de niveau 1 à 3</small></span><i>✓</i></button>
+              <button class="type-card" type="button" data-type="Demande de devis"><span class="type-icon">€</span><span><strong>Demande de devis</strong><small>Chiffrage d’un besoin</small></span><i>✓</i></button>
+              <button class="type-card" type="button" data-type="Demande d’expertise"><span class="type-icon">◇</span><span><strong>Demande d’expertise</strong><small>Architecture et conseil</small></span><i>✓</i></button>
+              <button class="type-card" type="button" data-type="Licences et souscriptions"><span class="type-icon">⌘</span><span><strong>Licences et souscriptions</strong><small>Création, renouvellement, évolution</small></span><i>✓</i></button>
+              <button class="type-card" type="button" data-type="Déclaration de problème"><span class="type-icon">!</span><span><strong>Déclaration de problème</strong><small>Incident ou dysfonctionnement</small></span><i>✓</i></button>
+              <button class="type-card" type="button" data-type="Question diverse"><span class="type-icon">?</span><span><strong>Question diverse</strong><small>Question administrative ou autre</small></span><i>✓</i></button>
+            </div>
+          </section>
+
+          <section class="form-panel" aria-labelledby="form-title">
+            <div class="section-heading"><span class="step-number">2</span><div><h2 id="form-title">Informations de la demande</h2><p id="form-subtitle">Précisez votre besoin d’assistance.</p></div></div>
+            <form id="request-form">
+              <input type="hidden" name="type" id="request-type" value="Assistance technique" />
+              <fieldset><legend>Vos coordonnées</legend><div class="form-grid">
+                <label>Établissement <span>*</span><input name="organization" required autocomplete="organization" placeholder="Nom de l’établissement" /></label>
+                <label>Service émetteur <span>*</span><input name="service" required placeholder="Direction ou service" /></label>
+                <label>Nom du demandeur <span>*</span><input name="requester" required autocomplete="name" placeholder="Prénom et nom" /></label>
+                <label>Adresse électronique <span>*</span><input name="email" type="email" required autocomplete="email" placeholder="nom@etablissement.fr" /></label>
+              </div></fieldset>
+              <fieldset><legend>Votre besoin</legend><div class="form-grid">
+                <label class="full">Objet de la demande <span>*</span><input name="subject" required maxlength="120" placeholder="Résumez votre demande en une phrase" /></label>
+                <div id="specific-fields" class="form-grid nested-grid full"></div>
+                <label>Priorité <span>*</span><select name="priority" required><option>Normale</option><option>Haute</option><option>Critique</option><option>Faible</option></select></label>
+                <label>Date souhaitée <input name="wantedDate" type="date" /></label>
+                <label class="full">Description détaillée <span>*</span><textarea name="description" required rows="5" placeholder="Décrivez le contexte, le résultat attendu et toute information utile."></textarea><small class="field-help">Ne transmettez aucune donnée sensible dans ce champ.</small></label>
+              </div></fieldset>
+              <label class="consent"><input type="checkbox" required /> <span>Je confirme l’exactitude des informations saisies et accepte leur traitement dans le cadre de cette demande.</span></label>
+              <div class="form-actions"><button class="button secondary" type="reset">Effacer</button><button class="button primary" type="submit">Envoyer ma demande <span>→</span></button></div>
+            </form>
+          </section>
+        </div>
+      </section>
+
+      <section id="follow-view" class="page hidden">
+        <div class="page-intro"><div><p class="eyebrow">ESPACE DEMANDEUR</p><h1>Suivre mes demandes</h1><p>Consultez l’état d’avancement et l’historique des demandes envoyées depuis ce navigateur.</p></div><button class="button primary" data-view="create">＋ Créer une demande</button></div>
+        <section class="follow-panel">
+          <div class="filters"><label class="search"><span>⌕</span><input id="search" type="search" placeholder="Rechercher une référence ou un objet" /></label><select id="status-filter"><option value="">Tous les statuts</option><option>Nouvelle</option><option>En cours</option><option>Résolue</option><option>Clôturée</option></select></div>
+          <div class="table-wrap"><table><thead><tr><th>Référence</th><th>Demande</th><th>Type</th><th>Créée le</th><th>Statut</th></tr></thead><tbody id="request-list"></tbody></table></div>
+          <div class="empty hidden" id="empty"><span>⌕</span><h2>Aucune demande trouvée</h2><p>Créez une demande ou modifiez votre recherche.</p></div>
+        </section>
+      </section>
+
+      <section id="success-view" class="page hidden">
+        <div class="success-card"><div class="success-icon">✓</div><p class="eyebrow">ACCUSÉ DE RÉCEPTION</p><h1>Votre demande a bien été enregistrée</h1><p>Elle a été horodatée et transmise à l’équipe en charge de son traitement.</p><div class="reference-box"><small>Votre numéro de demande</small><strong id="success-reference"></strong><button id="copy-reference" class="copy-button">Copier</button></div><dl><div><dt>Type</dt><dd id="success-type"></dd></div><div><dt>Date et heure</dt><dd id="success-date"></dd></div><div><dt>Confirmation envoyée à</dt><dd id="success-email"></dd></div></dl><div class="success-actions"><button class="button secondary" data-view="follow">Suivre mes demandes</button><button class="button primary" id="create-another">Créer une autre demande</button></div></div>
+      </section>
+    </main>
+
+    <dialog id="detail-dialog"><div id="detail-content"></div></dialog>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="app.js"></script>
+  </body>
+</html>
+
