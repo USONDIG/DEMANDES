@@ -4,7 +4,8 @@
 
 ## Fonctionnalités
 
-- module de création visible dès l'ouverture ;
+- bouton unique de création ouvrant une fenêtre modale ;
+- sélection du type de demande et des options par menus déroulants ;
 - six types de demandes et formulaires contextuels ;
 - coordonnées de l'établissement, du service et du demandeur ;
 - référence unique, horodatage et accusé de réception simulé ;
