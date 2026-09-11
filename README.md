@@ -11,7 +11,7 @@
 - référence unique, horodatage et accusé de réception simulé ;
 - consultation et recherche dans les demandes envoyées ;
 - historique de suivi en lecture seule ;
-- conservation locale des données dans le navigateur.
+- conservation des données pendant la session de démonstration.
 
 ## Version Streamlit
 
