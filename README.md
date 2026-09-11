@@ -11,7 +11,12 @@
 - référence unique, horodatage et accusé de réception simulé ;
 - consultation et recherche dans les demandes envoyées ;
 - historique de suivi en lecture seule ;
+- tableau de bord de reporting avec indicateurs, graphiques et filtres cumulables ;
+- filtrage par établissement, type, statut et priorité ;
+- export CSV de la vue filtrée ;
 - conservation des données pendant la session de démonstration.
+
+L'interface utilise un langage graphique contemporain : violet dominant, touches corail et turquoise, fonds clairs et cartes arrondies.
 
 ## Version Streamlit
 
