@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+import pandas as pd
 import streamlit as st
 
 
@@ -72,6 +73,90 @@ SAMPLE_REQUESTS = [
         "created": "07/09/2026 15:42",
         "description": "Expertise sur les prérequis et les étapes de la montée de version.",
         "history": ["07/09/2026 15:42 — Demande reçue et accusé envoyé"],
+    },
+    {
+        "id": "DEM-2026-0040",
+        "subject": "Blocage de l’accès à la plateforme",
+        "type": "Déclaration de problème",
+        "organization": "CHU Atlantique",
+        "service": "Support utilisateurs",
+        "requester": "Sarah Petit",
+        "email": "sarah.petit@example.fr",
+        "priority": "Critique",
+        "status": "En cours",
+        "created": "06/09/2026 08:21",
+        "description": "Plusieurs utilisateurs ne peuvent plus accéder à la plateforme.",
+        "history": ["06/09/2026 08:21 — Demande reçue et accusé envoyé"],
+    },
+    {
+        "id": "DEM-2026-0039",
+        "subject": "Chiffrage de 80 licences supplémentaires",
+        "type": "Demande de devis",
+        "organization": "Ville de Lyon",
+        "service": "Achats numériques",
+        "requester": "Nora Garcia",
+        "email": "nora.garcia@example.fr",
+        "priority": "Haute",
+        "status": "Nouvelle",
+        "created": "05/09/2026 16:05",
+        "description": "Demande de chiffrage pour une extension du parc de licences.",
+        "history": ["05/09/2026 16:05 — Demande reçue et accusé envoyé"],
+    },
+    {
+        "id": "DEM-2026-0038",
+        "subject": "Diagnostic de performance applicative",
+        "type": "Assistance technique",
+        "organization": "Région Centre",
+        "service": "Exploitation",
+        "requester": "Jean Morel",
+        "email": "jean.morel@example.fr",
+        "priority": "Normale",
+        "status": "Résolue",
+        "created": "04/09/2026 11:32",
+        "description": "Analyse de lenteurs constatées sur l’environnement de production.",
+        "history": ["04/09/2026 11:32 — Demande reçue", "05/09/2026 10:12 — Résolution proposée"],
+    },
+    {
+        "id": "DEM-2026-0037",
+        "subject": "Question sur la facturation trimestrielle",
+        "type": "Question diverse",
+        "organization": "Département du Rhône",
+        "service": "Finances",
+        "requester": "Marc Leroy",
+        "email": "marc.leroy@example.fr",
+        "priority": "Faible",
+        "status": "Clôturée",
+        "created": "03/09/2026 14:18",
+        "description": "Demande de précision sur le détail d’une facture trimestrielle.",
+        "history": ["03/09/2026 14:18 — Demande reçue", "04/09/2026 09:02 — Demande clôturée"],
+    },
+    {
+        "id": "DEM-2026-0036",
+        "subject": "Atelier d’optimisation de l’architecture",
+        "type": "Demande d’expertise",
+        "organization": "Région Centre",
+        "service": "Architecture",
+        "requester": "Inès Roux",
+        "email": "ines.roux@example.fr",
+        "priority": "Haute",
+        "status": "En cours",
+        "created": "02/09/2026 10:10",
+        "description": "Préparation d’un atelier d’optimisation de l’architecture cible.",
+        "history": ["02/09/2026 10:10 — Demande reçue et accusé envoyé"],
+    },
+    {
+        "id": "DEM-2026-0035",
+        "subject": "Création de comptes de test",
+        "type": "Assistance technique",
+        "organization": "Métropole Nord",
+        "service": "Recette",
+        "requester": "Luc Dubois",
+        "email": "luc.dubois@example.fr",
+        "priority": "Normale",
+        "status": "Résolue",
+        "created": "01/09/2026 13:45",
+        "description": "Création de cinq comptes pour la campagne de recette.",
+        "history": ["01/09/2026 13:45 — Demande reçue", "02/09/2026 08:30 — Comptes créés"],
     },
 ]
 
@@ -232,8 +317,23 @@ def request_dialog() -> None:
             )
 
 
+def render_brand_header() -> None:
+    st.markdown(
+        """
+        <div class="portal-header">
+          <div class="portal-identity">
+            <span class="portal-symbol">◆</span>
+            <div><strong>demandes</strong><small>Portail des services émetteurs</small></div>
+          </div>
+          <span class="availability"><i></i> Service disponible</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def creation_page() -> None:
-    st.markdown('<p class="eyebrow">PORTAIL DES SERVICES ÉMETTEURS</p>', unsafe_allow_html=True)
+    st.markdown('<p class="eyebrow">ACCUEIL</p>', unsafe_allow_html=True)
     st.title("Vos demandes, au même endroit")
     st.write(
         "Déposez une nouvelle demande en quelques étapes. Un numéro unique et un "
@@ -243,11 +343,12 @@ def creation_page() -> None:
     st.markdown(
         """
         <div class="launch-card">
-          <div class="launch-icon">＋</div>
-          <div>
-            <strong>Nouvelle demande</strong>
+          <div class="launch-copy">
+            <span>NOUVELLE DEMANDE</span>
+            <strong>Comment pouvons-nous vous aider ?</strong>
             <p>Assistance, devis, expertise, licences, problème ou question diverse.</p>
           </div>
+          <div class="launch-orb">＋</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -261,11 +362,11 @@ def creation_page() -> None:
         st.session_state.success_request = None
         request_dialog()
 
-    st.markdown("### Comment ça fonctionne ?")
+    st.markdown("### Un parcours simple")
     col1, col2, col3 = st.columns(3)
-    col1.markdown("**1. Choisissez**  \nSélectionnez le type dans le menu déroulant.")
-    col2.markdown("**2. Décrivez**  \nComplétez uniquement les informations utiles.")
-    col3.markdown("**3. Suivez**  \nConservez la référence transmise après l’envoi.")
+    col1.markdown("**01 — Choisissez**  \nSélectionnez le type dans le menu déroulant.")
+    col2.markdown("**02 — Décrivez**  \nComplétez uniquement les informations utiles.")
+    col3.markdown("**03 — Suivez**  \nConservez la référence transmise après l’envoi.")
 
 
 def follow_page() -> None:
@@ -301,36 +402,161 @@ def follow_page() -> None:
         st.info("Aucune demande ne correspond aux critères sélectionnés.")
 
 
+def reporting_page() -> None:
+    st.markdown('<p class="eyebrow">PILOTAGE</p>', unsafe_allow_html=True)
+    st.title("Tableau de bord des demandes")
+    st.write("Filtrez les indicateurs et le détail pour préparer vos points de pilotage.")
+
+    data = pd.DataFrame(st.session_state.requests)
+    data["created_dt"] = pd.to_datetime(data["created"], dayfirst=True, errors="coerce")
+
+    with st.container(border=True):
+        st.markdown('<p class="filter-title">FILTRES DU RAPPORT</p>', unsafe_allow_html=True)
+        col1, col2 = st.columns(2)
+        organizations = col1.multiselect(
+            "Établissement",
+            sorted(data["organization"].dropna().unique()),
+            placeholder="Tous les établissements",
+        )
+        request_types = col2.multiselect(
+            "Type de demande",
+            sorted(data["type"].dropna().unique()),
+            placeholder="Tous les types",
+        )
+        col3, col4 = st.columns(2)
+        statuses = col3.multiselect(
+            "Statut",
+            ["Nouvelle", "En cours", "Résolue", "Clôturée"],
+            placeholder="Tous les statuts",
+        )
+        priorities = col4.multiselect(
+            "Priorité",
+            ["Critique", "Haute", "Normale", "Faible"],
+            placeholder="Toutes les priorités",
+        )
+
+    filtered = data.copy()
+    if organizations:
+        filtered = filtered[filtered["organization"].isin(organizations)]
+    if request_types:
+        filtered = filtered[filtered["type"].isin(request_types)]
+    if statuses:
+        filtered = filtered[filtered["status"].isin(statuses)]
+    if priorities:
+        filtered = filtered[filtered["priority"].isin(priorities)]
+
+    kpi1, kpi2, kpi3, kpi4 = st.columns(4)
+    kpi1.metric("Demandes", len(filtered))
+    kpi2.metric("Nouvelles", int((filtered["status"] == "Nouvelle").sum()))
+    kpi3.metric("En cours", int((filtered["status"] == "En cours").sum()))
+    kpi4.metric("Priorité critique", int((filtered["priority"] == "Critique").sum()))
+
+    if filtered.empty:
+        st.info("Aucune donnée ne correspond à cette combinaison de filtres.")
+        return
+
+    chart1, chart2 = st.columns(2)
+    with chart1:
+        st.markdown("#### Répartition par statut")
+        status_order = ["Nouvelle", "En cours", "Résolue", "Clôturée"]
+        status_data = (
+            filtered["status"].value_counts().reindex(status_order, fill_value=0).rename("Demandes")
+        )
+        st.bar_chart(status_data, color="#5B38E8", height=280)
+    with chart2:
+        st.markdown("#### Répartition par type")
+        type_data = filtered["type"].value_counts().sort_values().rename("Demandes")
+        st.bar_chart(type_data, color="#FF8B7C", horizontal=True, height=280)
+
+    st.markdown("### Détail des demandes")
+    table = filtered[
+        ["id", "subject", "type", "organization", "service", "priority", "status", "created"]
+    ].rename(
+        columns={
+            "id": "Référence",
+            "subject": "Objet",
+            "type": "Type",
+            "organization": "Établissement",
+            "service": "Service",
+            "priority": "Priorité",
+            "status": "Statut",
+            "created": "Créée le",
+        }
+    )
+    st.dataframe(
+        table,
+        use_container_width=True,
+        hide_index=True,
+        height=min(520, 38 * (len(table) + 1)),
+    )
+    st.download_button(
+        "Exporter la vue en CSV",
+        data=table.to_csv(index=False, sep=";").encode("utf-8-sig"),
+        file_name="reporting-demandes.csv",
+        mime="text/csv",
+    )
+
+
 st.markdown(
     """
     <style>
+      :root { --violet: #5b38e8; --ink: #32185f; --coral: #ff8b7c; --aqua: #45d5cf; --yellow: #ffd84d; }
       [data-testid="stHeader"] { background: transparent; }
-      .stApp { background: #f4f6f9; color: #17253b; }
-      .block-container { max-width: 1180px; padding-top: 2.2rem; padding-bottom: 4rem; }
-      h1, h2, h3 { color: #17253b; letter-spacing: -.025em; }
-      .eyebrow { color: #2866e8; font-size: .72rem; font-weight: 800; letter-spacing: .12em; margin: 0 0 .25rem; }
+      .stApp { background: #f2f2f5; color: #3e3157; }
+      .block-container { max-width: 1220px; padding-top: 1.4rem; padding-bottom: 4rem; }
+      h1, h2, h3, h4 { color: var(--ink); letter-spacing: -.035em; }
+      h1 { font-size: clamp(2rem, 4vw, 3.2rem); line-height: 1.05; }
+      .portal-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; background: white; border-radius: 0 0 24px 24px; padding: 1.15rem 1.4rem; margin: -1.4rem 0 1.8rem; box-shadow: 0 8px 30px rgba(52, 29, 98, .07); border-top: 4px solid var(--coral); }
+      .portal-identity { display: flex; align-items: center; gap: .75rem; color: var(--ink); }
+      .portal-symbol { display: grid; place-items: center; width: 2.4rem; height: 2.4rem; border-radius: 50%; background: var(--violet); color: white; font-size: 1rem; }
+      .portal-identity strong, .portal-identity small { display: block; }
+      .portal-identity strong { color: var(--violet); font-size: 1.35rem; line-height: 1; letter-spacing: -.04em; }
+      .portal-identity small { color: #746b83; margin-top: .18rem; }
+      .availability { color: var(--ink); background: #f2efff; border-radius: 999px; padding: .5rem .8rem; font-size: .78rem; font-weight: 700; }
+      .availability i { display: inline-block; width: .5rem; height: .5rem; margin-right: .35rem; border-radius: 50%; background: var(--aqua); }
+      .eyebrow, .filter-title { color: var(--violet); font-size: .72rem; font-weight: 850; letter-spacing: .14em; margin: 0 0 .3rem; }
       div[data-testid="stVerticalBlock"] { gap: .8rem; }
-      div[data-testid="stForm"] { background: white; border: 1px solid #dfe5ee; border-radius: 14px; padding: 1.5rem; box-shadow: 0 12px 32px rgba(19,38,67,.07); }
-      .stButton button, .stFormSubmitButton button { border-radius: 9px; min-height: 2.75rem; font-weight: 700; }
-      .receipt { background: #edf3ff; border: 1px solid #bfd0f7; border-radius: 12px; padding: 1.4rem; margin: 1rem 0; text-align: center; }
-      .receipt span, .receipt strong, .receipt small { display: block; }
-      .receipt span, .receipt small { color: #657188; }
-      .receipt strong { color: #17253b; font-size: 1.7rem; margin: .3rem 0; letter-spacing: .04em; }
-      .launch-card { display: flex; align-items: center; gap: 1rem; background: white; border: 1px solid #dfe5ee; border-radius: 14px; padding: 1.35rem; margin: 1.5rem 0 .75rem; box-shadow: 0 12px 32px rgba(19,38,67,.07); }
-      .launch-card strong { display: block; color: #17253b; font-size: 1.05rem; }
-      .launch-card p { margin: .2rem 0 0; color: #657188; }
-      .launch-icon { display: grid; place-items: center; width: 3rem; height: 3rem; flex: 0 0 3rem; border-radius: 10px; color: white; background: #2866e8; font-size: 1.5rem; font-weight: 700; }
-      [data-testid="stMetric"] { background: white; border: 1px solid #dfe5ee; border-radius: 9px; padding: .75rem; }
+      div[data-testid="stForm"], div[data-testid="stVerticalBlockBorderWrapper"] > div { background: white; border-color: #e5e0ed !important; border-radius: 20px !important; }
+      div[data-testid="stForm"] { padding: 1.5rem; box-shadow: 0 14px 38px rgba(52, 29, 98, .08); }
+      .stButton button, .stFormSubmitButton button, .stDownloadButton button { border-radius: 999px; min-height: 2.8rem; font-weight: 750; border: 0; }
+      .stButton button[kind="primary"], .stFormSubmitButton button[kind="primary"] { background: var(--violet); box-shadow: 0 8px 20px rgba(91, 56, 232, .22); }
+      .launch-card { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between; gap: 2rem; color: white; background: linear-gradient(120deg, #4d24dc 0%, #6948f0 100%); border-radius: 28px; padding: 2.2rem 2.4rem; margin: 1.6rem 0 .8rem; box-shadow: 0 22px 50px rgba(80, 43, 198, .22); }
+      .launch-copy { position: relative; z-index: 1; }
+      .launch-copy span { color: #ddd5ff; font-size: .72rem; font-weight: 800; letter-spacing: .14em; }
+      .launch-copy strong { display: block; color: white; font-size: clamp(1.35rem, 3vw, 2.1rem); margin: .45rem 0; letter-spacing: -.035em; }
+      .launch-copy p { color: #eeeaff; margin: 0; }
+      .launch-orb { display: grid; place-items: center; min-width: 6.2rem; height: 6.2rem; border-radius: 50%; color: var(--ink); background: var(--coral); font-size: 3rem; font-weight: 300; box-shadow: -18px 16px 0 var(--yellow); }
+      [data-testid="stMetric"] { background: white; border: 0; border-radius: 18px; padding: 1rem 1.1rem; box-shadow: 0 8px 24px rgba(52, 29, 98, .06); border-top: 4px solid var(--violet); }
+      [data-testid="stMetric"] label { color: #756c82; }
+      [data-testid="stMetricValue"] { color: var(--ink); }
+      [data-testid="stDataFrame"] { background: white; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 24px rgba(52, 29, 98, .06); }
+      .stTabs [data-baseweb="tab-list"] { gap: .25rem; background: white; border-radius: 999px; padding: .3rem; width: fit-content; box-shadow: 0 6px 20px rgba(52, 29, 98, .06); }
+      .stTabs [data-baseweb="tab"] { border-radius: 999px; padding: .55rem 1rem; color: #6e647c; }
+      .stTabs [aria-selected="true"] { background: #f1edff; color: var(--violet) !important; }
+      .stTabs [data-baseweb="tab-highlight"] { display: none; }
+      [data-testid="stExpander"] { background: white; border: 0; border-radius: 16px; box-shadow: 0 6px 20px rgba(52, 29, 98, .05); }
+      @media (max-width: 700px) {
+        .availability { display: none; }
+        .launch-card { padding: 1.7rem; }
+        .launch-orb { min-width: 4rem; height: 4rem; font-size: 2rem; box-shadow: -10px 10px 0 var(--yellow); }
+      }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
 initialize_state()
-tab_create, tab_follow = st.tabs(
-    ["Créer une demande", f"Suivre mes demandes ({len(st.session_state.requests)})"]
+render_brand_header()
+tab_create, tab_follow, tab_reporting = st.tabs(
+    [
+        "Créer une demande",
+        f"Suivre mes demandes ({len(st.session_state.requests)})",
+        "Reporting",
+    ]
 )
 with tab_create:
     creation_page()
 with tab_follow:
     follow_page()
+with tab_reporting:
+    reporting_page()
