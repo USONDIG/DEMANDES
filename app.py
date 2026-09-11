@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from html import escape
 from zoneinfo import ZoneInfo
 
 import streamlit as st
@@ -80,8 +79,6 @@ SAMPLE_REQUESTS = [
 def initialize_state() -> None:
     if "requests" not in st.session_state:
         st.session_state.requests = [item.copy() for item in SAMPLE_REQUESTS]
-    if "selected_type" not in st.session_state:
-        st.session_state.selected_type = "Assistance technique"
     if "success_request" not in st.session_state:
         st.session_state.success_request = None
 
@@ -166,61 +163,19 @@ def submit_request(values: dict) -> None:
     st.session_state.success_request = values
 
 
-def category_selector() -> None:
-    st.markdown("### 1. Nature de la demande")
-    st.caption("Choisissez la catégorie qui correspond à votre besoin.")
-    rows = [list(TYPES)[:3], list(TYPES)[3:]]
-    for row in rows:
-        columns = st.columns(3)
-        for column, request_type in zip(columns, row):
-            item = TYPES[request_type]
-            selected = st.session_state.selected_type == request_type
-            label = f"{'✓ ' if selected else ''}{item['icon']}  {request_type}"
-            if column.button(
-                label,
-                key=f"type-{request_type}",
-                help=item["description"],
-                use_container_width=True,
-                type="primary" if selected else "secondary",
-            ):
-                st.session_state.selected_type = request_type
-                st.session_state.success_request = None
-                st.rerun()
-            column.caption(item["description"])
-
-
-def creation_page() -> None:
-    st.markdown('<p class="eyebrow">PORTAIL DES SERVICES ÉMETTEURS</p>', unsafe_allow_html=True)
-    st.title("Créer une demande")
-    st.write(
-        "Sélectionnez votre besoin et complétez le formulaire. "
-        "Un numéro unique et un accusé de réception sont générés immédiatement."
+@st.dialog("Créer une demande", width="large")
+def request_dialog() -> None:
+    st.caption("Sélectionnez le type de demande, puis complétez les informations utiles.")
+    notice = st.empty()
+    request_type = st.selectbox(
+        "Type de demande *",
+        list(TYPES),
+        key="dialog_request_type",
+        format_func=lambda value: f"{TYPES[value]['icon']}  {value}",
     )
+    st.caption(TYPES[request_type]["description"])
 
-    if st.session_state.success_request:
-        item = st.session_state.success_request
-        st.success("Votre demande a bien été enregistrée et horodatée.")
-        st.markdown(
-            f"""
-            <div class="receipt">
-              <span>Numéro de demande</span>
-              <strong>{escape(item['id'])}</strong>
-              <small>Confirmation simulée envoyée à {escape(item['email'])}</small>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        if st.button("Créer une autre demande"):
-            st.session_state.success_request = None
-            st.rerun()
-        return
-
-    category_selector()
-    st.divider()
-    st.markdown("### 2. Informations de la demande")
-    st.caption(f"Catégorie sélectionnée : {st.session_state.selected_type}")
-
-    with st.form("request-form", clear_on_submit=True):
+    with st.form("request-dialog-form", clear_on_submit=True):
         st.markdown("#### Vos coordonnées")
         col1, col2 = st.columns(2)
         organization = col1.text_input("Établissement *", placeholder="Nom de l’établissement")
@@ -233,7 +188,7 @@ def creation_page() -> None:
         subject = st.text_input(
             "Objet de la demande *", placeholder="Résumez votre demande en une phrase"
         )
-        details = render_type_fields(st.session_state.selected_type)
+        details = render_type_fields(request_type)
         col5, col6 = st.columns(2)
         priority = col5.selectbox("Priorité *", ["Normale", "Haute", "Critique", "Faible"])
         wanted_date = col6.date_input("Date souhaitée", value=None)
@@ -258,7 +213,7 @@ def creation_page() -> None:
         else:
             submit_request(
                 {
-                    "type": st.session_state.selected_type,
+                    "type": request_type,
                     "organization": organization,
                     "service": service,
                     "requester": requester,
@@ -270,7 +225,47 @@ def creation_page() -> None:
                     "details": details,
                 }
             )
-            st.rerun()
+            item = st.session_state.success_request
+            notice.success(
+                f"Demande {item['id']} enregistrée. "
+                f"L’accusé de réception a été préparé pour {item['email']}."
+            )
+
+
+def creation_page() -> None:
+    st.markdown('<p class="eyebrow">PORTAIL DES SERVICES ÉMETTEURS</p>', unsafe_allow_html=True)
+    st.title("Vos demandes, au même endroit")
+    st.write(
+        "Déposez une nouvelle demande en quelques étapes. Un numéro unique et un "
+        "accusé de réception sont générés immédiatement."
+    )
+
+    st.markdown(
+        """
+        <div class="launch-card">
+          <div class="launch-icon">＋</div>
+          <div>
+            <strong>Nouvelle demande</strong>
+            <p>Assistance, devis, expertise, licences, problème ou question diverse.</p>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    if st.button(
+        "Créer une demande",
+        type="primary",
+        use_container_width=True,
+        key="open-request-dialog",
+    ):
+        st.session_state.success_request = None
+        request_dialog()
+
+    st.markdown("### Comment ça fonctionne ?")
+    col1, col2, col3 = st.columns(3)
+    col1.markdown("**1. Choisissez**  \nSélectionnez le type dans le menu déroulant.")
+    col2.markdown("**2. Décrivez**  \nComplétez uniquement les informations utiles.")
+    col3.markdown("**3. Suivez**  \nConservez la référence transmise après l’envoi.")
 
 
 def follow_page() -> None:
@@ -321,6 +316,10 @@ st.markdown(
       .receipt span, .receipt strong, .receipt small { display: block; }
       .receipt span, .receipt small { color: #657188; }
       .receipt strong { color: #17253b; font-size: 1.7rem; margin: .3rem 0; letter-spacing: .04em; }
+      .launch-card { display: flex; align-items: center; gap: 1rem; background: white; border: 1px solid #dfe5ee; border-radius: 14px; padding: 1.35rem; margin: 1.5rem 0 .75rem; box-shadow: 0 12px 32px rgba(19,38,67,.07); }
+      .launch-card strong { display: block; color: #17253b; font-size: 1.05rem; }
+      .launch-card p { margin: .2rem 0 0; color: #657188; }
+      .launch-icon { display: grid; place-items: center; width: 3rem; height: 3rem; flex: 0 0 3rem; border-radius: 10px; color: white; background: #2866e8; font-size: 1.5rem; font-weight: 700; }
       [data-testid="stMetric"] { background: white; border: 1px solid #dfe5ee; border-radius: 9px; padding: .75rem; }
     </style>
     """,
